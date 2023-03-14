@@ -21,7 +21,15 @@
         tools:layout="@layout/fragment_second">
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_SecondFragment_to_HandleTransactionFragment"
+            app:destination="@id/HandleTransactionFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/HandleTransactionFragment"
+        android:name="io.pixfuser.HandleTransactionFragment"
+        tools:layout="@layout/fragment_handle_transaction">
+
+
     </fragment>
 </navigation>

@@ -1,23 +1,28 @@
 package io.pixfuser
 
+import android.content.Context
 import android.nfc.NdefMessage
+import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
+import android.nfc.NfcManager
 import android.os.Bundle
-import android.os.Parcelable
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import io.phantomBridge.PhantomBridge
+import io.pixfuser.InternalConstants.PUB_KEY
+import io.pixfuser.InternalConstants.TRANSACTION
 import io.pixfuser.databinding.FragmentSecondBinding
 
-class TransactionFragment : Fragment() {
+class TransactionFragment : Fragment(), NfcCallback {
 
     private var _binding: FragmentSecondBinding? = null
     private val binding get() = _binding!!
-    private var nfcAdapter: NfcAdapter? = null
+    private var nfcManager: NfcManager? = null
     private val phantomBridge = PhantomBridge()
     private var pubKey: ByteArray? = null
     private var sharedPubKey: ByteArray? = null
@@ -26,27 +31,22 @@ class TransactionFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
+        nfcManager = requireContext().getSystemService(Context.NFC_SERVICE) as NfcManager
 
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        nfcAdapter = NfcAdapter.getDefaultAdapter(requireContext())
 
         binding.btnSendTransaction.setOnClickListener {
-            if (binding.cbTransactionWithoutReceiver.isChecked) {
+            if (binding.cbTransactionWithoutReceiver.isChecked && (nfcManager?.defaultAdapter != null)) {
 
-                val transaction = phantomBridge.createTransaction()
-                val encryptor = Encryptor(sharedPubKey!!, privateKey!!)
-                val transactionMessage =  NdefMessage(encryptor.encryptPayload(transaction))
-                val message = NdefMessage(pubKey)
+                 val message = NdefMessage(NdefRecord(PUB_KEY.toByteArray()), NdefRecord(pubKey))
 
-                nfcAdapter?.setNdefPushMessage(message, requireActivity())
-                nfcAdapter?.setNdefPushMessage(transactionMessage, requireActivity())
+                nfcManager?.defaultAdapter?.setNdefPushMessage(message, requireActivity())
 
             } else {
                 phantomBridge.sendTransaction(
@@ -65,22 +65,26 @@ class TransactionFragment : Fragment() {
                 }
             }
         }
-    }
 
-    fun handleNfcMessage(){
-        val rawMsgs: Array<Parcelable> =
-            requireActivity().intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)!!
-        var msg: NdefMessage? = null
-        if (rawMsgs != null && rawMsgs.size > 0) {
-            msg = rawMsgs[0] as NdefMessage
-        }
-        if (msg != null) {
-            sharedPubKey = msg.toByteArray()
+        binding.btnReceiveTransaction.setOnClickListener {
+            findNavController().navigate(R.id.action_SecondFragment_to_HandleTransactionFragment)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun sharedPubReceived(sharedPub: ByteArray) {
+        sharedPubKey = sharedPub
+        val transaction = phantomBridge.createTransaction()
+        val encryptor = Encryptor(sharedPubKey!!, privateKey!!)
+        val transactionMessage =  NdefMessage(NdefRecord(TRANSACTION.toByteArray()), NdefRecord(encryptor.encryptPayload(transaction)))
+        nfcManager?.defaultAdapter?.setNdefPushMessage(transactionMessage, requireActivity())
+    }
+
+    override fun payloadReceived(payload: ByteArray) {
+        //todo sign and send transaction
     }
 }

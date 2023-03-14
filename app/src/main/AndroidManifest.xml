@@ -8,9 +8,9 @@
         android:required="true" />
 
     <application
-        android:allowBackup="true"
+        android:name=".PixFuserApp"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:allowBackup="false"
         android:icon="@drawable/pixfuser_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"

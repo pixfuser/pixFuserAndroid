@@ -10,9 +10,9 @@ class Encryptor(private val publicKey: ByteArray, private val privateKey: ByteAr
             .box(payload.toByteArray()
     )
 
-    fun decryptData(data: String) = String(
+    fun decryptData(data: ByteArray) = String(
         TweetNacl.Box(publicKey, privateKey)
-            .open(Base58.decode(data))
+            .open(data)
     )
 
 }

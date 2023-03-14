@@ -2,14 +2,16 @@
     <string name="app_name">PixFuser</string>
 
     <string name="app_scheme">app</string>
-    <string name="app_host">io.pixFuser</string>
-    <string name="connect_path">connect</string>
+    <string name="app_host">onpixfuserconnected</string>
+    <string name="connect_path">/connect</string>
     <string name="send_transaction_path">sendTransaction</string>
 
     <string name="connect_wallet_title">Connect your wallet*</string>
+    <string name="nfc_transaction_title">Wait for nfc transaction</string>
     <string name="connect">Connect</string>
     <string name="scan_button">Scan</string>
     <string name="enter_transaction_receiver">Enter your transaction receiver</string>
     <string name="create_and_send">Create and send</string>
+    <string name="receive_transaction">Receive transaction</string>
     <string name="create_without_receiver">Make transaction without receiver</string>
 </resources>
